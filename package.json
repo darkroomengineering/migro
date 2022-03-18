@@ -1,0 +1,17 @@
+{
+  "name": "csv-importer",
+  "version": "1.0.0",
+  "main": "index.js",
+  "base-url": ".",
+  "dependencies": {
+    "@contentful/rich-text-from-markdown": "^15.11.2",
+    "contentful-cli": "^1.9.31",
+    "contentful-management": "^8.2.2",
+    "dotenv": "^16.0.0",
+    "request": "^2.88.2",
+    "turndown": "^7.1.1"
+  },
+  "type": "module",
+  "author": "",
+  "license": "ISC"
+}
