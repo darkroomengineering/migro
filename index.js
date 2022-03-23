@@ -3,10 +3,10 @@ import { migrate } from "./src/migrator.js";
 
 /* Setup config */
 const mungingHundler = async (row, parsed) => myDataMunging(row, parsed);
-const TSVdataFileName = "clyde-blogs-clean.tsv";
+const TSVdataFileName = "data.tsv";
+const entryTarget = "blogsPost";
 const batchSize = 2;
 const offset = 0;
-const entryTarget = "blogsPost";
 
 /* Don't touch */
 
