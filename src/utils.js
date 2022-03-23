@@ -28,7 +28,7 @@ export const readJson = (path) => {
 };
 
 // Save file into Json
-export const saveJSon = (data, path) => {
+export const writeJson = (data, path) => {
   const temp = JSON.stringify(data);
 
   fs.writeFile(path, temp, "utf8", (err) => {
@@ -42,7 +42,7 @@ export const saveJSon = (data, path) => {
 
 export const readAndWriteJSon = async (data, path) => {
   const readData = readJson(path);
-  saveJSon([...readData, ...data], path);
+  writeJson([...readData, ...data], path);
 };
 
 export const client = contentful.createClient({
@@ -83,7 +83,7 @@ const publishAsset = async (assetId) => {
     .then((space) => space.getEnvironment(process.env.ENVIRONMENT_ID))
     .then((environment) => environment.getAsset(assetId))
     .then((asset) => asset.publish())
-    .then((asset) => console.log(`Asset ${asset.sys.id} published.`))
+    // .then((asset) => console.log(`Asset ${asset.sys.id} published.`))
     .catch(console.error);
 };
 
