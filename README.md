@@ -63,3 +63,6 @@ Create a .env file on the root folder with the following variables:
 - ENVIRONMENT_ID = The Environment ID from the space we are migrating into.
 - SPACE_ID = The Space ID of the Contentful organization.
 
+## Example
+
+Working Example on branch blog-example
