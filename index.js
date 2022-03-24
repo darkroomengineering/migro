@@ -5,7 +5,7 @@ const mungingHundler = async (row, parsed) => myDataMunging(row, parsed);
 const pathFile = "./input/" + "data.tsv";
 const batchSize = 1;
 const offset = 0;
-const contentTypeId = "ContentTypeIdFromContentful";
+const entryTarget = "blogsPost";
 
 /* 
    The myDataMunging function provides each row of data from TSV file or CMA
