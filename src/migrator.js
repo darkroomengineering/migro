@@ -1,18 +1,15 @@
 import fs from "fs";
-import { exit } from "process";
 import request from "request";
 import {
-  createContent,
+  getEntries,
   readAndWriteJSon,
   readJson,
   sleep,
-  updateContent,
   writeJson,
-  getEntries,
-  TSVtoObject,
 } from "./utils.js";
 
 // Variables
+const pathAssets = "./assets/";
 const pathJson = "./input/data.json";
 const pathMainLogs = "./logs/logs.json";
 const pathMungingLogs = "./logs/logs-munging-data.json";
@@ -21,7 +18,7 @@ let mungingDataLogs = [];
 let entryLogs = [];
 
 // Data Munging
-const sequentialProcess = async (mungingHundler, rawData) => {
+const dataMunging = async (mungingHundler, rawData) => {
   let parsed = [];
 
   const parse = async () => {
