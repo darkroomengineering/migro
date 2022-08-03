@@ -6,8 +6,10 @@ import {
   readAndWriteJSon,
   readJson,
   sleep,
+  updateContent,
   writeJson,
   getEntries,
+  TSVtoObject,
 } from "./utils.js";
 
 // Variables
@@ -72,13 +74,7 @@ export class Migrate {
       exit();
     }
 
-    const data = await readJson(this.pathFile, false);
-    const fields = data.split("\r\n").map((row) => row.split("\t"));
-    this.data = fields
-      .slice(2)
-      .map((row) =>
-        Object.assign({}, ...fields[1].map((key, idx) => ({ [key]: row[idx] })))
-      );
+    this.data = await TSVtoObject(this.pathFile);
   }
 
   async loadFromCMA() {
@@ -107,7 +103,41 @@ export class Migrate {
     );
   }
 
-  async run(source = "file") {
+  async create(row) {
+    return await createContent(row, this.contentTypeId)
+      .then(() =>
+        entryLogs.push({
+          title: row.title["en-US"],
+          status: "Entry created ✅",
+        })
+      )
+      .catch((error) =>
+        entryLogs.push({
+          title: row.title["en-US"],
+          status: "Entry created ❌",
+          error: error,
+        })
+      );
+  }
+
+  async update(row) {
+    return await updateContent(row)
+      .then(() =>
+        entryLogs.push({
+          title: row.id,
+          status: "Entry updated ✅",
+        })
+      )
+      .catch((error) =>
+        entryLogs.push({
+          title: row.id,
+          status: "Entry updated ❌",
+          error: error,
+        })
+      );
+  }
+
+  async run(source = "file", operation = "create") {
     await this.resetFiles();
     // Load data
     if (source === "file") {
@@ -142,7 +172,6 @@ export class Migrate {
         );
         exit();
       }
-      await sleep(2000);
 
       // Load Batch and create content type entry
       entryLogs = [];
@@ -151,22 +180,14 @@ export class Migrate {
       for (const row of loadBatch) {
         entryCounter++;
         console.log("Creating Entry Number:", entryCounter);
+        operation === "create";
 
-        await createContent(row, this.contentTypeId)
-          .then(() =>
-            entryLogs.push({
-              title: row.title["en-US"],
-              status: "Entry created ✅",
-            })
-          )
-          .catch((error) =>
-            entryLogs.push({
-              title: row.title["en-US"],
-              status: "Entry created ❌",
-              error: error,
-            })
-          );
-        await sleep(2000);
+        if (operation === "create") {
+          await this.create(row);
+        }
+        if (operation === "update") {
+          await this.update(row);
+        }
       }
 
       if (this.publishJustOneBatchForTesting) {

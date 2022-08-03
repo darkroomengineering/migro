@@ -29,6 +29,17 @@ export const readJson = async (path, parseIntoJSon = true) => {
   return parseIntoJSon ? JSON.parse(read) : read;
 };
 
+// Read TSV to object
+export const TSVtoObject = async (pathFile) => {
+  const data = await readJson(pathFile, false);
+  const fields = data.split("\r\n").map((row) => row.split("\t"));
+  return fields
+    .slice(2)
+    .map((row) =>
+      Object.assign({}, ...fields[1].map((key, idx) => ({ [key]: row[idx] })))
+    );
+};
+
 // Save file into Json
 export const writeJson = async (data, path) => {
   const temp = JSON.stringify(data);
@@ -126,6 +137,18 @@ export const createContent = async (data, contentTypeID) => {
         fields: data,
       })
     );
+};
+
+export const updateContent = async (data) => {
+  return client
+    .getSpace(process.env.SPACE_ID)
+    .then((space) => space.getEnvironment(process.env.ENVIRONMENT_ID))
+    .then((environment) => environment.getEntry(data.id))
+    .then((entry) => {
+      data.fields.map((field) => (entry.fields[field.key] = field.value));
+      return entry.update();
+    })
+    .catch(console.error);
 };
 
 export const publishEntry = async (entryId) => {
