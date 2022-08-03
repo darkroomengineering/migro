@@ -1,12 +1,11 @@
 import { Migrate } from "./src/migrator.js";
-import { TSVtoObject } from "./src/utils.js";
 
 /* Setup config */
 const mungingHundler = async (row, parsed) => myDataMunging(row, parsed);
 const pathFile = "./input/" + "data.tsv";
 const batchSize = 1;
 const offset = 0;
-const contentTypeId = "author";
+const contentTypeId = "ContentTypeIdFromContentful";
 const debug = false;
 const publishJustOneBatchForTesting = false;
 
@@ -18,26 +17,13 @@ const publishJustOneBatchForTesting = false;
    whicih should be called inside the mungingHundler function.
 */
 
-const updateData = await TSVtoObject(pathFile);
-
 const myDataMunging = async (row, parsed) => {
-  const newValue = updateData.find(
-    (item) => item.name === row.fields.fullName["en-US"]
-  );
+  console.log(row);
 
   parsed.push({
-    id: row.sys.id,
-    target: "fullName",
-    fields: [
-      {
-        key: "fullName",
-        value: { "en-US": newValue.newName },
-      },
-      {
-        key: "internalReferenceTitle",
-        value: { "en-US": newValue.newName },
-      },
-    ],
+    title: {
+      "en-US": row.title,
+    },
   });
 };
 
@@ -55,10 +41,10 @@ const intoContentful = new Migrate(
 intoContentful.getContentTypeStructure();
 
 // For console log inse myDataMunging without creating content type
-// intoContentful.setDebug();
+intoContentful.setDebug();
 
-// For testing just one batcch to evaluate script creation in Contentful
+// For testing just one batch to evaluate script creation in Contentful
 // intoContentful.setPublishJustOneBatchForTesting();
 
 // Execute script
-await intoContentful.run("cma", "update");
+await intoContentful.run("file", "create");
