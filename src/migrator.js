@@ -1,4 +1,5 @@
 import fs from "fs";
+import { exit } from "process";
 import request from "request";
 import {
   createContent,
@@ -6,10 +7,10 @@ import {
   readJson,
   sleep,
   writeJson,
+  getEntries,
 } from "./utils.js";
 
 // Variables
-const pathAssets = "./assets/";
 const pathJson = "./input/data.json";
 const pathMainLogs = "./logs/logs.json";
 const pathMungingLogs = "./logs/logs-munging-data.json";
@@ -17,33 +18,8 @@ let entryCounter = 0;
 let mungingDataLogs = [];
 let entryLogs = [];
 
-// Download Images if needed
-const download = (featuredImage, slug) => {
-  const imageExtension = row.featuredImage.split(".").pop();
-  const path = pathAssets + slug["en-US"] + `.${imageExtension}`;
-
-  request.head(url, (err, res, body) => {
-    request(url)
-      .pipe(fs.createWriteStream(path))
-      .on("close", () => {
-        console.log("✅ Done!");
-      });
-  });
-};
-
-// Load Data from File
-const loadData = (pathFile) => {
-  const data = fs.readFileSync(pathFile, "utf8");
-  const fields = data.split("\r\n").map((row) => row.split("\t"));
-  return fields
-    .slice(2)
-    .map((row) =>
-      Object.assign({}, ...fields[1].map((key, idx) => ({ [key]: row[idx] })))
-    );
-};
-
 // Data Munging
-const dataMunging = async (mungingHundler, rawData) => {
+const sequentialProcess = async (mungingHundler, rawData) => {
   let parsed = [];
 
   const parse = async () => {
@@ -55,72 +31,149 @@ const dataMunging = async (mungingHundler, rawData) => {
       console.log("Item inside Batch", rowCounter);
 
       await mungingHundler(row, parsed);
-
       return [...results, row];
     }, []);
   };
+
   await parse().catch((error) => mungingDataLogs.push({ errors: error }));
   return parsed;
 };
 
-// Migration Batch function
-export const migrate = async ({
-  entryTarget,
-  mungingHundler,
-  batchSize = 10,
-  offset = 0,
-  pathFile,
-}) => {
-  // Create and/or reset files
-  writeJson([], pathJson);
-  writeJson([], pathMungingLogs);
-  writeJson([], pathMainLogs);
-  // Load data
-  const data = loadData(pathFile);
+export class Migrate {
+  data;
 
-  await sleep(2000);
-  console.log("Starting migration");
-
-  // Create batch, load assets and linked entries
-  for (
-    let i = Math.floor(offset / batchSize);
-    i <= Math.floor(data.length / batchSize);
-    i++
+  constructor(
+    mungingHundler,
+    batchSize = 10,
+    offset,
+    pathFile = "",
+    debug = false,
+    publishJustOneBatchForTesting = false,
+    contentTypeId
   ) {
-    // Mungle and export batch
-    const min = Math.max(0, batchSize * i);
-    const max = Math.min(data.length, batchSize * (i + 1));
-    console.log("Working on batch:", `Init ${min} - Finish ${max}`);
-    const parsedData = await dataMunging(mungingHundler, data.slice(min, max));
-    writeJson(parsedData, pathJson);
-    readAndWriteJSon(mungingDataLogs, pathMungingLogs);
-
-    await sleep(5000);
-
-    // Load Batch and create entry
-    entryLogs = [];
-    const loadBatch = readJson(pathJson);
-
-    for (const row of loadBatch) {
-      entryCounter++;
-      console.log("Creating Entry Number:", entryCounter);
-
-      await createContent(row, entryTarget)
-        .then(() =>
-          entryLogs.push({
-            title: row.title["en-US"],
-            status: "Entry created ✅",
-          })
-        )
-        .catch((error) =>
-          entryLogs.push({
-            title: row.title["en-US"],
-            status: "Entry created ❌",
-            error: error,
-          })
-        );
-      await sleep(2000);
-    }
-    await readAndWriteJSon(entryLogs, pathMainLogs);
+    this.mungingHundler = mungingHundler;
+    this.batchSize = batchSize;
+    this.offset = offset;
+    this.pathFile = pathFile;
+    this.debug = debug;
+    this.publishJustOneBatchForTesting = publishJustOneBatchForTesting;
+    this.contentTypeId = contentTypeId;
   }
-};
+
+  async resetFiles() {
+    await writeJson([], pathJson);
+    await writeJson([], pathMungingLogs);
+    await writeJson([], pathMainLogs);
+  }
+
+  async loadFromFile() {
+    if (!this.pathFile || typeof this.pathFile !== "string") {
+      console.log("pathfile variable wrong", this.pathFile);
+      exit();
+    }
+
+    const data = await readJson(this.pathFile, false);
+    const fields = data.split("\r\n").map((row) => row.split("\t"));
+    this.data = fields
+      .slice(2)
+      .map((row) =>
+        Object.assign({}, ...fields[1].map((key, idx) => ({ [key]: row[idx] })))
+      );
+  }
+
+  async loadFromCMA() {
+    if (!this.contentTypeId || typeof this.contentTypeId !== "string") {
+      console.log("pathfile variable wrong", this.contentTypeId);
+      exit();
+    }
+
+    const fetchData = await getEntries(this.contentTypeId);
+    this.data = fetchData.items;
+  }
+
+  setDebug() {
+    this.debug = true;
+  }
+
+  setPublishJustOneBatchForTesting() {
+    this.publishJustOneBatchForTesting = true;
+  }
+
+  async getContentTypeStructure() {
+    const fetchData = await getEntries(this.contentTypeId);
+    writeJson(
+      fetchData.items.map((item) => item.fields),
+      "./input/content-type-body.json"
+    );
+  }
+
+  async run(source = "file") {
+    await this.resetFiles();
+    // Load data
+    if (source === "file") {
+      await this.loadFromFile();
+    } else if (source === "cma") {
+      await this.loadFromCMA();
+    }
+
+    console.log("Starting migration");
+    // Create batch, load assets and linked entries
+    for (
+      let i = Math.floor(this.offset / this.batchSize);
+      i <= Math.floor(this.data.length / this.batchSize);
+      i++
+    ) {
+      // Mungle and export batch
+      const min = Math.max(0, this.batchSize * i);
+      const max = Math.min(this.data.length, this.batchSize * (i + 1));
+      console.log("Working on batch:", `Init ${min} - Finish ${max}`);
+
+      const parsedData = await sequentialProcess(
+        this.mungingHundler,
+        this.data.slice(min, max)
+      );
+
+      await writeJson(parsedData, pathJson);
+      await readAndWriteJSon(mungingDataLogs, pathMungingLogs);
+
+      if (this.debug) {
+        console.log(
+          "debug mode breaking before pushing Contentent Type into Contentful"
+        );
+        exit();
+      }
+      await sleep(2000);
+
+      // Load Batch and create content type entry
+      entryLogs = [];
+      const loadBatch = await readJson(pathJson);
+
+      for (const row of loadBatch) {
+        entryCounter++;
+        console.log("Creating Entry Number:", entryCounter);
+
+        await createContent(row, this.contentTypeId)
+          .then(() =>
+            entryLogs.push({
+              title: row.title["en-US"],
+              status: "Entry created ✅",
+            })
+          )
+          .catch((error) =>
+            entryLogs.push({
+              title: row.title["en-US"],
+              status: "Entry created ❌",
+              error: error,
+            })
+          );
+        await sleep(2000);
+      }
+
+      if (this.publishJustOneBatchForTesting) {
+        console.log("Publish one content type batch for testing");
+        exit();
+      }
+      await readAndWriteJSon(entryLogs, pathMainLogs);
+    }
+  }
+}

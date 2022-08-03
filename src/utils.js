@@ -1,50 +1,47 @@
 import contentful from "contentful-management";
 import dotenv from "dotenv";
-import fs from "fs";
+import { promises as fs } from "fs";
 
 dotenv.config();
-
-export const months = {
-  Jan: "01",
-  Feb: "02",
-  Mar: "03",
-  Apr: "04",
-  May: "05",
-  Jun: "06",
-  Jul: "07",
-  Aug: "08",
-  Sep: "09",
-  Oct: "10",
-  Nov: "11",
-  Dec: "12",
-};
 
 export function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export const readJson = (path) => {
-  return JSON.parse(fs.readFileSync(path, "utf8"));
-};
+// Download Images if needed
+export const download = (featuredImage, slug) => {
+  const pathAssets = "./assets/";
+  const imageExtension = row.featuredImage.split(".").pop();
+  const path = pathAssets + slug["en-US"] + `.${imageExtension}`;
 
-// Save file into Json
-export const writeJson = (data, path) => {
-  const temp = JSON.stringify(data);
-
-  fs.writeFile(path, temp, "utf8", (err) => {
-    if (err) {
-      console.log(`Error writing file: ${err}`);
-    } else {
-      console.log(`File is written successfully!`);
-    }
+  request.head(url, (err, res, body) => {
+    request(url)
+      .pipe(fs.createWriteStream(path))
+      .on("close", () => {
+        console.log("✅ Done!");
+      });
   });
 };
 
-export const readAndWriteJSon = async (data, path) => {
-  const readData = readJson(path);
-  writeJson([...readData, ...data], path);
+// Read file
+export const readJson = async (path, parseIntoJSon = true) => {
+  const read = await fs.readFile(path, "utf8");
+  return parseIntoJSon ? JSON.parse(read) : read;
 };
 
+// Save file into Json
+export const writeJson = async (data, path) => {
+  const temp = JSON.stringify(data);
+  await fs.writeFile(path, temp, "utf8");
+};
+
+// Read & Write file
+export const readAndWriteJSon = async (data, path) => {
+  const readData = await readJson(path);
+  await writeJson([...readData, ...data], path);
+};
+
+// Contentful CMA helper functions
 export const client = contentful.createClient({
   accessToken: process.env.ACCESS_TOKEN,
 });
@@ -102,17 +99,21 @@ export const getEntries = async (contentType) => {
     );
 };
 
-export const getEntriesByField = async (entryValue, entryTarget, entryType) => {
+export const getEntriesByField = async (
+  entryValue,
+  contentTypeId,
+  entryType
+) => {
   let entryId = false;
-  const fetchEntries = await getEntries(entryType).then(
-    (response) => response.items
-  );
-  for (const entry of fetchEntries) {
-    if (entry.fields[entryTarget]["en-US"] === entryValue) {
+  const fetchEntries = await getEntries(entryType);
+
+  for (const entry of fetchEntries.items) {
+    if (entry.fields[contentTypeId]["en-US"] === entryValue) {
       entryId = entry.sys.id;
       break;
     }
   }
+
   return entryId;
 };
 

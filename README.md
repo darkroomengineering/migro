@@ -45,7 +45,7 @@ On the src/utils.js file you have some helper functions for wrangling data, crea
 In the index.js file at the root folder you have to set up the following variables:
 
 - TSVdataFileName: file name with raw data, String.
-- entryTarget: Content Type name (from contentful content model) for entry to migrate, String.
+- contentTypeId: Content Type name (from contentful content model) for entry to migrate, String.
 
 optionals:
 - batchSize: Number.
