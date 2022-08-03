@@ -106,7 +106,7 @@ export const getEntries = async (contentType) => {
     .getSpace(process.env.SPACE_ID)
     .then((space) => space.getEnvironment(process.env.ENVIRONMENT_ID))
     .then((environment) =>
-      environment.getEntries({ content_type: contentType })
+      environment.getEntries({ content_type: contentType, limit: 200 })
     );
 };
 
