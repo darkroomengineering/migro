@@ -40,7 +40,7 @@ const intoContentful = new Migrate(
 // Save content Type API response for easier set up
 intoContentful.getContentTypeStructure();
 
-// For console log inse myDataMunging without creating content type
+// For console log inside myDataMunging without creating content type
 intoContentful.setDebug();
 
 // For testing just one batch to evaluate script creation in Contentful
