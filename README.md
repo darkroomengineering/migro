@@ -1,68 +1,135 @@
-# into-contentful
-Script for migrating data from X-CMS to Contentful via the CMA-API.
+# Into-contentful
+Script for migrating data or bulk modifications to existent data into Contentful via the CMA-API.
 
-This code uses a TSV-file (tab separated value) with data exported from X-CMS and imports it into Contentful.
+#### **WHY**
 
-Migration involves two steps:
+Each migration or changes to existent data is almost unique requiring coding everytime. This Script sets the basic flow and functions that can be reused doing the process easier.
 
-- First, parsed the TSV-file into a JSON file with contentful structure. This steps involves data munging and creating the necesary content each 
-case needs. For example, a blog may have author information as a separate content type. Thus first we need to create this asset to obtain the Id to link
-it to the corresponding blog.
+We may spent lots of hours writing a code to handle migrations and bulk modifications BUT we will NEVER spent tons of hours doing a repetitive task. 
 
-- Second, use the corresponding JSON file to create the entries.
+#### **PURPOSES**
 
-## TSV file config:
+- Migrate data into Contentful from TSV file:
 
-- The TSV-file first row are the fields name your file has (never used, is just for an easier set up of the following row).
-- The TSV-file second row are the fields name of the entry to be migrated and they will be accesible from the code.
-- TSV-file has to be saved inside input folder.
+ Migrating data from other CMS can be done by exporting the data into a TSV file and using this to populate the content in Contentful. Check [Blog migration example](https://github.com/studio-freight/into-contentful/tree/blog-example) for more information about this.
 
-See the following image as an example for migrating a blog:
-![Screen Shot 2022-03-23 at 20 15 25](https://user-images.githubusercontent.com/64488427/159787794-6d72e040-6b8a-407d-a9b7-5b79d43702cb.png)
+- Bulk Modification of existing Data:
 
-## Data Munging (First Step)
+ Changing existing entries of content type is done by gettin all the entries of the content type and updating the content. Check [Bulk modification example](https://github.com/studio-freight/into-contentful/tree/bulk-modifications) for more information about this.
 
-The script reads the TSV-file and returns a function with arguments row and parsed. 
+#### **SETTING UP**
 
-- row: These are the rows of the TSV-file as an object where the keys are the second column you setted up on the TSV-file. Following the example above, 
-this object will look like:
+- Install:
 
-```js script
-row = {title: 'this is title', internalReferenceTitle: 'this is internalReferenceTitle', urlSlug: 'slug', contentTypes: 'e-commerce',
- featuredImage: 'url to image', body: 'html of blog body' publishData: 'October 21, 2015', author: 'guido Fier'}
+```
+npm install or yarn install or pnpm i
 ```
 
-- parsed: This is an array where you have to push wrangled data with the correct format for each field corresponding to the entry on contentful.
+- Set envs:
 
-In the data-munging.js file, inside the myDataMunging function you can set the structure of the json which will be used to migrate data. Also, you can 
-define helpers functions inside this file to be used inside myDataMunging. Rembember that you will be using row, parse it and then push 
-it into parsed array. 
+Use env.example for guidance. Create a .env file on the root folder with the following variables:
 
-On the src/utils.js file you have some helper functions for wrangling data, creating assets and entries.
+```
+ACCESS_TOKEN = This is the CMA access token of contentful, watch out is not the same as the other APIs.
+ENVIRONMENT_ID = The Environment ID from the space we are migrating into.
+SPACE_ID = The Space ID of the Contentful organization.
+```
 
-## Configuration
+- Posible Configuration:
 
-In the index.js file at the root folder you have to set up the following variables:
+All code will be done in index.js in root folder. Here you can set up configs.
 
-- TSVdataFileName: file name with raw data, String.
-- contentTypeId: Content Type name (from contentful content model) for entry to migrate, String.
+```
+pathFile: Save your file in the input folder or change this path accordingly. Example: const pathFile = "./input/" + "your-file-name.tsv";
+batchSize: How many entries of the content type are created in sequence.
+offset: From which value script should begin. Useful when script has stop and want to restart from certain point.
+contentTypeId: The content type ID from Contentful which we want to create or update.
+```
 
-optionals:
-- batchSize: Number.
-- offset: Number.
+#### **METHODS**
 
-Code runs batchs of step 1 and step 2. By default it will run a batch of 10 rows for first step and then will execute step 2 for these rows. This way
-is easier to detect errors and not loose progress because of them. 
-Offset variable allows to select from which batch step the code will start working.
+```javascript
+intoContentful.getContentTypeStructure();
+```
 
-## Environment Variables
+The hardest part is structuring our new data in the exact way Contentful expects it. The best and fastest way we find to achieve this is first creating an entry of the content type and gettin the API response. We can use this response as a mock up for our data. 
+This method saves the API response of the content type in a JSON file called content-type-body.json in the input folder.
 
-Create a .env file on the root folder with the following variables:
+```javascript
+intoContentful.setDebug();
+```
 
-- ACCESS_TOKEN = This is the CMA access token of contentful, watch out is not the same as the other APIs.
-- ENVIRONMENT_ID = The Environment ID from the space we are migrating into.
-- SPACE_ID = The Space ID of the Contentful organization.
+This method breaks script before starting the batch creation of the entries of the content type. Is useful for console the values of the input data or to test how we are manipulating data.
 
-## Example
+```javascript
+intoContentful.setPublishJustOneBatchForTesting();
+```
 
-Working Example on branch blog-example
+This method breaks script after first batch creation to test if data creation or update is working as expected. Recomend to use batchSize = 1 to just create one entry.
+
+```javascript
+intoContentful.run();
+
+// For creating entries from TSV file:
+await intoContentful.run("file", "create");
+
+// For Updating entries from existing data:
+await intoContentful.run("cma", "update");
+```
+
+Mandatory method that executes script.
+
+
+#### **USAGE**
+
+For running the script just:
+
+```
+node index
+```
+
+#### **HOW IT WORKS**
+
+If you made it up to here you really need to create/update tons of entries, we hope this helps.
+
+Input data is treated as two dimensional array, where each row of the array will contain the data for each entry. 
+First row should be use as a guidance using the existing keys of the input data (will always be skipped but **must** be present). Second row should have the content type fields name.
+
+TSV file structrue example:
+```
+title url topic
+title slug category
+my-new-title /my-new-title migrations
+```
+This will create an object with the following structure:
+
+```javascript
+row = {title: 'my-new-title', slug: '/my-new-title', category: 'migrations'}
+```
+
+To transform our data to the format expected by Contentful we have to do it inside the ```myDataMunging```function.
+
+The ```myDataMunging```function will iterate the input data and will return to arrays. 
+- ```row```: Has each row of the TSV file as an object (as explained above). 
+- ```parsed```: Carries the transformed data. This means that you must apply all the changes and then pushed into parsed.
+
+Beacuse usually content types have one or many referenes to other content types this script runs batches. For each ```N``` size batch script will iterate the TSV file for the N rows. For linked content types we must provide the unique ID, this process of creating or fetching the IDs must happen inside the ```myDataMunging```function. The parsed data for each batch will be saved in a JSON file and then this file will be used for creating or updating the Content Type.   
+
+
+#### AVOID ####
+
+Try to avoid concurrent loops to not hit contentful API rate-limits.
+
+```javascript
+
+// Bad
+ await Promise.all(data.map(async (i) => {
+// your code
+}));
+
+// Good
+await for(const i of data){
+// your code
+}
+
+```
