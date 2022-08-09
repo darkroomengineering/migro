@@ -14,8 +14,6 @@ const pathFile = "./input/" + "data.tsv";
 const batchSize = 1;
 const offset = 0;
 const contentTypeId = "blogsPost";
-const debug = false;
-const publishJustOneBatchForTesting = false;
 
 /* 
    The myDataMunging function provides each row of data from TSV file or CMA
@@ -24,21 +22,6 @@ const publishJustOneBatchForTesting = false;
 */
 
 let embeddedCounter = 0;
-
-const months = {
-  January: "01",
-  February: "02",
-  March: "03",
-  April: "04",
-  May: "05",
-  June: "06",
-  July: "07",
-  August: "08",
-  September: "09",
-  October: "10",
-  November: "11",
-  December: "12",
-};
 
 // Handler for non supported content types i.e. embedded Assets
 const embeddedHandler = async (name, url) => {
@@ -104,23 +87,79 @@ const createMarkDown = async (body) => {
 };
 
 const myDataMunging = async (row, parsed) => {
-  console.log(row);
+  const bodyMd = await createMarkDown(row.body);
+  // Try & catch is mandatory because richTextFromMarkdown Lib has a
+  //Promise.all which may overcame Contentful Api Rate limit
+  const richTextBody = await richTextFromMarkdown(bodyMd, async (node) => {
+    try {
+      // console.log("Embedded format", node.url);
+      if (node.url === undefined) {
+        return null;
+      }
+      embeddedCounter += 1;
+      return await embeddedHandler(row.title, node.url);
+    } catch {
+      return null;
+    }
+  });
+
+  const featuredImageId = await saveAsset(row.title, row.featuredImage);
+
+  const authorId = await fetchAuthor(
+    row.author
+      .replace("-", " ")
+      .toLowerCase()
+      .split(" ")
+      .map((word) => word[0].toUpperCase() + word.slice(1))
+      .join(" ")
+  );
+
+  const tagId = await fetchTag(row.contentType);
+
+  await sleep((4 + embeddedCounter) * 1750);
 
   parsed.push({
     title: {
       "en-US": row.title,
     },
+    urlSlug: {
+      "en-US": row.urlSlug,
+    },
+    contentTypes: { "en-US": [row.contentType] },
+    body: {
+      "en-US": richTextBody,
+    },
+    tag: {
+      "en-US": {
+        sys: {
+          id: tagId,
+          linkType: "Entry",
+          type: "Link",
+        },
+      },
+    },
+    featuredImage: {
+      "en-US": {
+        sys: {
+          id: featuredImageId,
+          linkType: "Asset",
+          type: "Link",
+        },
+      },
+    },
+    author: {
+      "en-US": {
+        sys: {
+          id: authorId,
+          linkType: "Entry",
+          type: "Link",
+        },
+      },
+    },
   });
-};
 
-/* Setup config */
-const mungingHundler = async (row, parsed) => myDataMunging(row, parsed);
-const pathFile = "./input/" + "data.tsv";
-const batchSize = 1;
-const offset = 0;
-const contentTypeId = "blogsPost";
-const debug = false;
-const publishJustOneBatchForTesting = false;
+  embeddedCounter = 0;
+};
 
 const intoContentful = new Migrate(
   mungingHundler,
