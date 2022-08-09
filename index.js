@@ -173,11 +173,11 @@ const intoContentful = new Migrate(
   Comment or uncomment following methods as needed:
 */
 
-intoContentful.getContentTypeStructure(); // Save content Type API response for easier set up
+// intoContentful.getContentTypeStructure(); // Save content Type API response for easier set up
 
-intoContentful.setDebug(); // For console log inside myDataMunging without creating content type
+// intoContentful.setDebug(); // For console log inside myDataMunging without creating content type
 
-intoContentful.setPublishJustOneBatchForTesting(); // For testing just one batch to evaluate script creation in Contentful
+// intoContentful.setPublishJustOneBatchForTesting(); // For testing just one batch to evaluate script creation in Contentful
 
 /* 
   Mandatory method.
