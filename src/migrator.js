@@ -5,11 +5,12 @@ import {
   readAndWriteJSon,
   readJson,
   sleep,
+  updateContent,
   writeJson,
+  TSVtoObject,
 } from "./utils.js";
 
 // Variables
-const pathAssets = "./assets/";
 const pathJson = "./input/data.json";
 const pathMainLogs = "./logs/logs.json";
 const pathMungingLogs = "./logs/logs-munging-data.json";
@@ -18,7 +19,7 @@ let mungingDataLogs = [];
 let entryLogs = [];
 
 // Data Munging
-const dataMunging = async (mungingHundler, rawData) => {
+const sequentialProcess = async (mungingHundler, rawData) => {
   let parsed = [];
 
   const parse = async () => {
