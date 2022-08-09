@@ -2,11 +2,11 @@ import {
   getEntries,
   readAndWriteJSon,
   readJson,
-  sleep,
   updateContent,
   writeJson,
   TSVtoObject,
 } from "./utils.js";
+import { exit } from "process";
 
 // Variables
 const pathJson = "./input/data.json";

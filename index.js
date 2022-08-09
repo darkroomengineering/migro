@@ -1,4 +1,5 @@
 import { Migrate } from "./src/migrator.js";
+import { TSVtoObject } from "./src/utils.js";
 
 /* Setup config */
 const mungingHundler = async (row, parsed) => myDataMunging(row, parsed);
@@ -13,8 +14,14 @@ const contentTypeId = "author";
    data as needed.
 */
 
+const updateData = await TSVtoObject(pathFile);
+
 const myDataMunging = async (row, parsed) => {
   console.log(row);
+
+  const newValue = updateData.find(
+    (item) => item.name === row.fields.fullName["en-US"]
+  );
 
   parsed.push({
     id: row.sys.id,
@@ -44,11 +51,11 @@ const intoContentful = new Migrate(
   Comment or uncomment following methods as needed:
 */
 
-intoContentful.getContentTypeStructure(); // Save content Type API response for easier set up
+// intoContentful.getContentTypeStructure(); // Save content Type API response for easier set up
 
-intoContentful.setDebug(); // For console log inside myDataMunging without creating content type
+// intoContentful.setDebug(); // For console log inside myDataMunging without creating content type
 
-intoContentful.setPublishJustOneBatchForTesting(); // For testing just one batch to evaluate script creation in Contentful
+// intoContentful.setPublishJustOneBatchForTesting(); // For testing just one batch to evaluate script creation in Contentful
 
 /* 
   Mandatory method.
