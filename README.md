@@ -40,7 +40,7 @@ SPACE_ID = The Space ID of the Contentful organization.
 All code will be done in index.js in root folder. Here you can set up configs.
 
 ```
-pathFile: Save your file in the input folder or change this path accordingly. Example: const pathFile = "./input/" + "your-file-name.tsv";
+pathFile: Save your input data file in the input folder or change this path accordingly. Example: const pathFile = "./input/" + "your-file-name.tsv";
 batchSize: How many entries of the content type are created in sequence.
 offset: From which value script should begin. Useful when script has stop and want to restart from certain point.
 contentTypeId: The content type ID from Contentful which we want to create or update.
@@ -59,13 +59,13 @@ This method saves the API response of the content type in a JSON file called con
 intoContentful.setDebug();
 ```
 
-This method breaks script before starting the batch creation of the entries of the content type. Is useful for console the values of the input data or to test how we are manipulating data.
+This method breaks script before starting the batch creation of the entries of the content type. Is useful for consoling values of the input data or to test how we are manipulating data.
 
 ```javascript
 intoContentful.setPublishJustOneBatchForTesting();
 ```
 
-This method breaks script after first batch creation to test if data creation or update is working as expected. Recomend to use batchSize = 1 to just create one entry.
+This method breaks script after first batch creation to test if data creation or update is working as expected. Recomend to use ```batchSize = 1``` to just create one entry.
 
 ```javascript
 intoContentful.run();
@@ -118,7 +118,7 @@ Beacuse usually content types have one or many referenes to other content types 
 
 #### AVOID ####
 
-Try to avoid concurrent loops to not hit contentful API rate-limits.
+Avoid concurrent loops, it may hit contentful API rate-limits.
 
 ```javascript
 
