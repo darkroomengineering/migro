@@ -5,7 +5,7 @@ const mungingHundler = async (row, parsed) => myDataMunging(row, parsed);
 const pathFile = "./input/" + "data.tsv";
 const batchSize = 1;
 const offset = 0;
-const contentTypeId = "ContentTypeIdFromContentful";
+const contentTypeId = "author";
 
 /* 
    The myDataMunging function provides each row of data from TSV file or CMA
@@ -17,9 +17,18 @@ const myDataMunging = async (row, parsed) => {
   console.log(row);
 
   parsed.push({
-    title: {
-      "en-US": row.title,
-    },
+    id: row.sys.id,
+    target: "fullName",
+    fields: [
+      {
+        key: "fullName",
+        value: { "en-US": newValue.newName },
+      },
+      {
+        key: "internalReferenceTitle",
+        value: { "en-US": newValue.newName },
+      },
+    ],
   });
 };
 
@@ -45,4 +54,4 @@ intoContentful.setPublishJustOneBatchForTesting(); // For testing just one batch
   Mandatory method.
 */
 
-await intoContentful.run("file", "create"); // Execute script
+await intoContentful.run("cma", "update"); // Execute script
