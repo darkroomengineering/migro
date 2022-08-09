@@ -6,15 +6,11 @@ const pathFile = "./input/" + "data.tsv";
 const batchSize = 1;
 const offset = 0;
 const contentTypeId = "ContentTypeIdFromContentful";
-const debug = false;
-const publishJustOneBatchForTesting = false;
 
 /* 
-   The mungingHundler function provides each row of data from TSV file or CMA
-   and a parsed object to pushed wrangled data.
-
-   Below you can define function for munging data for each use case and helper functions
-   whicih should be called inside the mungingHundler function.
+   The myDataMunging function provides each row of data from TSV file or CMA
+   and a parsed object to pushed wrangled data. Do inside your magic to transform 
+   data as needed.
 */
 
 const myDataMunging = async (row, parsed) => {
@@ -32,19 +28,21 @@ const intoContentful = new Migrate(
   batchSize,
   offset,
   pathFile,
-  debug,
-  publishJustOneBatchForTesting,
   contentTypeId
 );
 
-// Save content Type API response for easier set up
-intoContentful.getContentTypeStructure();
+/* 
+  Comment or uncomment following methods as needed:
+*/
 
-// For console log inside myDataMunging without creating content type
-intoContentful.setDebug();
+intoContentful.getContentTypeStructure(); // Save content Type API response for easier set up
 
-// For testing just one batch to evaluate script creation in Contentful
-// intoContentful.setPublishJustOneBatchForTesting();
+intoContentful.setDebug(); // For console log inside myDataMunging without creating content type
 
-// Execute script
-await intoContentful.run("file", "create");
+intoContentful.setPublishJustOneBatchForTesting(); // For testing just one batch to evaluate script creation in Contentful
+
+/* 
+  Mandatory method.
+*/
+
+await intoContentful.run("file", "create"); // Execute script

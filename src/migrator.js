@@ -49,16 +49,14 @@ export class Migrate {
     batchSize = 10,
     offset,
     pathFile = "",
-    debug = false,
-    publishJustOneBatchForTesting = false,
     contentTypeId
   ) {
     this.mungingHundler = mungingHundler;
     this.batchSize = batchSize;
     this.offset = offset;
     this.pathFile = pathFile;
-    this.debug = debug;
-    this.publishJustOneBatchForTesting = publishJustOneBatchForTesting;
+    this.debug = false;
+    this.publishJustOneBatchForTesting = false;
     this.contentTypeId = contentTypeId;
   }
 
