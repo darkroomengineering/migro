@@ -1,4 +1,4 @@
-# Into-contentful
+# Migro
 Script for migrating data or bulk modifications to existent data into Contentful via the CMA-API.
 
 #### **WHY**
@@ -22,7 +22,7 @@ We may spent lots of hours writing a code to handle migrations and bulk modifica
 - Install:
 
 ```
-npm install or yarn install or pnpm i
+pnpm i
 ```
 
 - Set envs:
