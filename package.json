@@ -1,5 +1,5 @@
 {
-  "name": "migro",
+  "name": "@studio-freight/migro",
   "version": "1.0.0",
   "main": "index.js",
   "base-url": ".",
