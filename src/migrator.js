@@ -95,6 +95,7 @@ export class Migrate {
       fetchData.items.map((item) => item.fields),
       "./input/content-type-body.json"
     );
+    console.log("check input folder content-type-body.json");
     exit();
   }
 
