@@ -109,7 +109,7 @@ row = {title: 'my-new-title', slug: '/my-new-title', category: 'migrations'}
 
 To transform our data to the format expected by Contentful we have to do it inside the ```myDataMunging```function.
 
-The ```myDataMunging```function will iterate the input data and will return to arrays. 
+The ```myDataMunging```function will iterate the input data and will return two arrays. 
 - ```row```: Has each row of the TSV file as an object (as explained above). 
 - ```parsed```: Carries the transformed data. This means that you must apply all the changes and then pushed into parsed.
 
