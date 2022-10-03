@@ -94,10 +94,12 @@ export class Migrate {
 
   async getContentTypeStructure() {
     const fetchData = await getEntries(this.contentTypeId);
-    writeJson(
+    await writeJson(
       fetchData.items.map((item) => item.fields),
       "./input/content-type-body.json"
     );
+    console.log("check input folder content-type-body.json");
+    exit();
   }
 
   async create(row) {
