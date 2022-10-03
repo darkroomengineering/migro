@@ -106,7 +106,11 @@ export const getEntries = async (contentType) => {
     .getSpace(process.env.SPACE_ID)
     .then((space) => space.getEnvironment(process.env.ENVIRONMENT_ID))
     .then((environment) =>
-      environment.getEntries({ content_type: contentType, limit: 200 })
+      environment.getEntries({
+        content_type: contentType,
+        limit: 200,
+        limit: 1000,
+      })
     );
 };
 
@@ -119,7 +123,10 @@ export const getEntriesByField = async (
   const fetchEntries = await getEntries(entryType);
 
   for (const entry of fetchEntries.items) {
-    if (entry.fields[contentTypeId]["en-US"] === entryValue) {
+    if (
+      !!entry.fields[contentTypeId] &&
+      entry.fields[contentTypeId]["en-US"] === entryValue
+    ) {
       entryId = entry.sys.id;
       break;
     }
