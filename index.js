@@ -173,7 +173,7 @@ const intoContentful = new Migrate(
   Comment or uncomment following methods as needed:
 */
 
-// intoContentful.getContentTypeStructure(); // Save content Type API response for easier set up
+await intoContentful.getContentTypeStructure(); // Save content Type API response for easier set up
 
 // intoContentful.setDebug(); // For console log inside myDataMunging without creating content type
 
