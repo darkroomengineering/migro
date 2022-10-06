@@ -5,10 +5,10 @@ const mungingHundler = async (row, parsed) => myDataMunging(row, parsed);
 const pathFile = "./input/" + "data.tsv";
 const batchSize = 1;
 const offset = 0;
-const contentTypeId = "ContentTypeIdFromContentful";
+const contentTypeId = "ContentTypeIdFromIntoContentful";
 // Only use when migrating from one Contentful Organization to other.
 // This is the content Type from where exporting the data
-const externalContentTypeId = "ContentTypeIdFromContentful";
+const externalContentTypeId = "ContentTypeIdFromOutContentful";
 
 /* 
    The myDataMunging function provides each row of data from External Contentful which 
