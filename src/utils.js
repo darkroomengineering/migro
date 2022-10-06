@@ -101,17 +101,56 @@ export const saveAsset = async (name, path) => {
   return assetId;
 };
 
+export const getAsset = async (assetId) => {
+  return client
+    .getSpace(process.env.SPACE_ID)
+    .then((space) => space.getEnvironment(process.env.ENVIRONMENT_ID))
+    .then((environment) => environment.getAsset(assetId))
+    .catch(console.error);
+};
+
+export const getAssetExternalEnv = async (assetId) => {
+  return client
+    .getSpace(process.env.EXTERNAL_SPACE_ID)
+    .then((space) => space.getEnvironment(process.env.EXTERNAL_ENVIRONMENT_ID))
+    .then((environment) => environment.getAsset(assetId))
+    .catch(console.error);
+};
+
+export const getEntryByIdExternalEnv = async (entryId) => {
+  return client
+    .getSpace(process.env.EXTERNAL_SPACE_ID)
+    .then((space) => space.getEnvironment(process.env.EXTERNAL_ENVIRONMENT_ID))
+    .then((environment) => environment.getEntry(entryId))
+    .catch(console.error);
+};
+
+export const getEntriesExternalEnvs = async (contentType) => {
+  return client
+    .getSpace(process.env.EXTERNAL_SPACE_ID)
+    .then((space) => space.getEnvironment(process.env.EXTERNAL_ENVIRONMENT_ID))
+    .then((environment) =>
+      environment.getEntries({ content_type: contentType, limit: 1000 })
+    )
+    .catch(console.error);
+};
+
 export const getEntries = async (contentType) => {
   return client
     .getSpace(process.env.SPACE_ID)
     .then((space) => space.getEnvironment(process.env.ENVIRONMENT_ID))
     .then((environment) =>
-      environment.getEntries({
-        content_type: contentType,
-        limit: 200,
-        limit: 1000,
-      })
-    );
+      environment.getEntries({ content_type: contentType, limit: 1000 })
+    )
+    .catch(console.error);
+};
+
+export const getEntryById = async (entryId) => {
+  return client
+    .getSpace(process.env.SPACE_ID)
+    .then((space) => space.getEnvironment(process.env.ENVIRONMENT_ID))
+    .then((environment) => environment.getEntry(entryId))
+    .catch(console.error);
 };
 
 export const getEntriesByField = async (
@@ -143,7 +182,8 @@ export const createContent = async (data, contentTypeID) => {
       environment.createEntry(contentTypeID, {
         fields: data,
       })
-    );
+    )
+    .catch(console.error);
 };
 
 export const updateContent = async (data) => {

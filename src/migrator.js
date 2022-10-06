@@ -4,6 +4,8 @@ import {
   readJson,
   updateContent,
   writeJson,
+  getEntries,
+  getEntriesExternalEnvs,
   TSVtoObject,
 } from "./utils.js";
 import { exit } from "process";
@@ -45,7 +47,8 @@ export class Migrate {
     batchSize = 10,
     offset,
     pathFile = "",
-    contentTypeId
+    contentTypeId,
+    externalContentTypeId = ""
   ) {
     this.mungingHundler = mungingHundler;
     this.batchSize = batchSize;
@@ -54,6 +57,7 @@ export class Migrate {
     this.debug = false;
     this.publishJustOneBatchForTesting = false;
     this.contentTypeId = contentTypeId;
+    this.externalContentTypeId = externalContentTypeId;
   }
 
   async resetFiles() {
@@ -73,11 +77,24 @@ export class Migrate {
 
   async loadFromCMA() {
     if (!this.contentTypeId || typeof this.contentTypeId !== "string") {
-      console.log("pathfile variable wrong", this.contentTypeId);
+      console.log("wrong contentType", this.contentTypeId);
       exit();
     }
 
     const fetchData = await getEntries(this.contentTypeId);
+    this.data = fetchData.items;
+  }
+
+  async loadFromDifferentCMA() {
+    if (
+      !this.externalContentTypeId ||
+      typeof this.externalContentTypeId !== "string"
+    ) {
+      console.log("wrong external contentType", this.externalContentTypeId);
+      exit();
+    }
+
+    const fetchData = await getEntriesExternalEnvs(this.externalContentTypeId);
     this.data = fetchData.items;
   }
 
@@ -103,13 +120,13 @@ export class Migrate {
     return await createContent(row, this.contentTypeId)
       .then(() =>
         entryLogs.push({
-          title: row.title["en-US"],
+          title: row.title ? row.title["en-US"] : Object.keys(row)[0],
           status: "Entry created ✅",
         })
       )
       .catch((error) =>
         entryLogs.push({
-          title: row.title["en-US"],
+          title: row.title ? row.title["en-US"] : Object.keys(row)[0],
           status: "Entry created ❌",
           error: error,
         })
@@ -140,6 +157,8 @@ export class Migrate {
       await this.loadFromFile();
     } else if (source === "cma") {
       await this.loadFromCMA();
+    } else if (source === "externalCma") {
+      await this.loadFromDifferentCMA();
     }
 
     console.log("Starting migration");
