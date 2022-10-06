@@ -6,6 +6,9 @@ const pathFile = "./input/" + "data.tsv";
 const batchSize = 1;
 const offset = 0;
 const contentTypeId = "ContentTypeIdFromContentful";
+// Only use when migrating from one Contentful Organization to other.
+// This is the content Type from where exporting the data
+const externalContentTypeId = "ContentTypeIdFromContentful";
 
 /* 
    The myDataMunging function provides each row of data from TSV file or CMA
