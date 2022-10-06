@@ -6,6 +6,7 @@ const pathFile = "./input/" + "data.tsv";
 const batchSize = 1;
 const offset = 0;
 const contentTypeId = "ContentTypeIdFromContentful";
+
 // Only use when migrating from one Contentful Organization to other.
 // This is the content Type from where exporting the data
 const externalContentTypeId = "ContentTypeIdFromContentful";
@@ -31,7 +32,8 @@ const intoContentful = new Migrate(
   batchSize,
   offset,
   pathFile,
-  contentTypeId
+  contentTypeId,
+  externalContentTypeId
 );
 
 /* 
