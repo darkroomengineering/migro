@@ -128,7 +128,7 @@ Avoid concurrent loops, it may hit contentful API rate-limits.
 }));
 
 // Good
-await for(const i of data){
+for await (const i of data){
 // your code
 }
 
