@@ -33,6 +33,11 @@ Use env.example for guidance. Create a .env file on the root folder with the fol
 ACCESS_TOKEN = This is the CMA access token of contentful, watch out is not the same as the other APIs.
 ENVIRONMENT_ID = The Environment ID from the space we are migrating into.
 SPACE_ID = The Space ID of the Contentful organization.
+
+### Only use this if migrating from one Contentful Organization to other
+### These are the environment and space ID from the Organization that has the data to migrate
+EXTERNAL_ENVIRONMENT_ID=The Environment ID from the space we are migrating from.
+EXTERNAL_SPACE_ID=The Space ID of the Contentful organization we are migrating from.
 ```
 
 - Posible Configuration:
@@ -44,6 +49,7 @@ pathFile: Save your input data file in the input folder or change this path acco
 batchSize: How many entries of the content type are created in sequence.
 offset: From which value script should begin. Useful when script has stop and want to restart from certain point.
 contentTypeId: The content type ID from Contentful which we want to create or update.
+externalContentTypeId: The content type ID from Contentful which we want to migrate data from. (Only use when migrating from contentful to contentful)
 ```
 
 #### **METHODS**
@@ -70,11 +76,16 @@ This method breaks script after first batch creation to test if data creation or
 ```javascript
 intoContentful.run();
 
+//Options:
+
 // For creating entries from TSV file:
 await intoContentful.run("file", "create");
 
 // For Updating entries from existing data:
 await intoContentful.run("cma", "update");
+
+// For Migrating from one Contentful Organization to another one:
+await intoContentful.run("externalCma", "create");
 ```
 
 Mandatory method that executes script.
