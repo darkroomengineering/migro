@@ -16,6 +16,10 @@ We may spent lots of hours writing a code to handle migrations and bulk modifica
 - Bulk Modification of existing Data:
 
  Changing existing entries of content type is done by gettin all the entries of the content type and updating the content. Check [Bulk modification example](https://github.com/studio-freight/into-contentful/tree/bulk-modifications) for more information about this.
+ 
+ - Migrate and restructure data from one contentful Org to another one:
+
+ Data will be fetch from one Contentful and sent to the other Contentful after restructuring it to the new needs. Check [Migration Between Contentful Organizations](https://github.com/studio-freight/migro/tree/from-contentful-to-contentful) for more information about this.
 
 #### **SETTING UP**
 
